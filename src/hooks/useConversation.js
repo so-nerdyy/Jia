@@ -9,7 +9,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 // ── Config ────────────────────────────────────────────────────────────────
-const PROACTIVE_INTERVAL_MS = 25000;
+const PROACTIVE_INTERVAL_MS = 10000;
 const SHRINK_DURATION_MS = 2000;
 const SPEECH_PAUSE_MS = 500;
 const SENTENCE_SPLIT = /(?<=[.!?])\s+/;
@@ -176,8 +176,8 @@ export function useConversation({ captureFrame }) {
         setIsSpeaking(false);
         speakingRef.current = false;
         setCurrentJiaText('');
-        // Resume listening - but don't wait, allow user to speak anytime
-        if (activeRef.current && !thinkingRef.current) {
+        // Only resume listening after AI finishes speaking (not during sending/thinking)
+        if (activeRef.current && !thinkingRef.current && !sendingRef.current) {
           setTimeout(() => startListeningRef.current?.(), 100);
         }
       }
@@ -434,7 +434,8 @@ export function useConversation({ captureFrame }) {
         const text = transcriptRef.current;
         transcriptRef.current = '';
 
-        if (text && activeRef.current && !speakingRef.current && !thinkingRef.current && !sendingRef.current) {
+        // Only resume listening after AI is done speaking (not during sending or thinking)
+        if (text && activeRef.current && !sendingRef.current && !thinkingRef.current) {
           setCurrentUserText('');
           setRingScale(1);
           const frame = captureFrame?.();
@@ -529,13 +530,9 @@ export function useConversation({ captureFrame }) {
     setRingScale(1);
   }, [stopAllAudio, killRecognition]);
 
-  // Resume listening when idle
-  useEffect(() => {
-    if (!isThinking && !isSending && isActive && !isSpeaking && !isListening) {
-      setRingScale(1);
-      setTimeout(() => startListeningRef.current?.(), 300);
-    }
-  }, [isThinking, isSending, isActive, isSpeaking, isListening]);
+  // Note: User can only talk during AI speaking stage - listening is blocked during sending/thinking
+  // in startListeningCycle (see line 341)
+  // This effect handles the transition from speaking back to listening
 
   // ── Cleanup ────────────────────────────────────────────────────────────
   useEffect(() => {

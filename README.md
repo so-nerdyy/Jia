@@ -53,7 +53,7 @@ Ngrok allows you to expose your local server to the internet, enabling voice int
 
 6. **Access Jia**
    - Copy the ngrok URL (e.g., `https://abc123.ngrok.io`)
-   - Open it in your browser
+   - Open it in your browser (ON YOUR PHONE!)
    - Grant camera and microphone permissions
 
 ### Using Ngrok TCP for dev server (alternative)
