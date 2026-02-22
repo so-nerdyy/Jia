@@ -231,12 +231,12 @@ export function useConversation({ captureFrame }) {
       if (!res.ok) throw new Error(`Chat failed: ${res.status}`);
 
       // Transition: Sending → Thinking
+      setIsThinking(true);
+      thinkingRef.current = true;
       if (!isProactive) {
         setIsSending(false);
         sendingRef.current = false;
       }
-      setIsThinking(true);
-      thinkingRef.current = true;
 
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
