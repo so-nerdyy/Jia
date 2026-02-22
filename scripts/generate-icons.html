@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PWA Icon Generator - Jia</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 600px; margin: 2rem auto; padding: 1rem; background: #1a1a2e; color: #fff; }
+    h1 { color: #ffd76a; }
+    canvas { display: none; }
+    .icons { display: flex; gap: 1rem; flex-wrap: wrap; margin: 1.5rem 0; }
+    .icon-preview { text-align: center; }
+    .icon-preview img { border-radius: 12px; margin-bottom: 0.5rem; }
+    button { background: linear-gradient(180deg, #4462cf, #354ea8); color: #fff; border: 1px solid #5f78d3; padding: 0.75rem 1.5rem; border-radius: 8px; font-size: 1rem; cursor: pointer; margin: 0.5rem; }
+    button:hover { filter: brightness(1.1); }
+    .instructions { background: #17234a; padding: 1rem; border-radius: 8px; margin-top: 1rem; }
+    code { background: #0b122f; padding: 0.2rem 0.4rem; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>Jia PWA Icon Generator</h1>
+  <p>Click the buttons below to download placeholder icons for your PWA.</p>
+  
+  <div class="icons" id="icons"></div>
+  
+  <div class="instructions">
+    <h3>Instructions</h3>
+    <ol>
+      <li>Click each "Download" button to save the icon</li>
+      <li>Move downloaded files to <code>public/icons/</code></li>
+      <li>Delete the <code>README.txt</code> in that folder</li>
+      <li>Your PWA will be installable!</li>
+    </ol>
+  </div>
+
+  <canvas id="canvas"></canvas>
+
+  <script>
+    const sizes = [192, 512];
+    const colors = {
+      bg: '#1a1a2e',
+      accent: '#7ea3ff',
+      highlight: '#ffd76a',
+      text: '#f7f9ff'
+    };
+
+    function drawIcon(ctx, size) {
+      ctx.fillStyle = colors.bg;
+      ctx.fillRect(0, 0, size, size);
+
+      const grad = ctx.createRadialGradient(size * 0.3, size * 0.2, 0, size * 0.5, size * 0.5, size * 0.8);
+      grad.addColorStop(0, '#2a3d7a');
+      grad.addColorStop(1, colors.bg);
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, size, size);
+
+      ctx.strokeStyle = colors.accent;
+      ctx.lineWidth = size * 0.03;
+      const r = size * 0.28;
+      ctx.beginPath();
+      ctx.arc(size / 2, size / 2, r, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.fillStyle = colors.highlight;
+      ctx.beginPath();
+      ctx.arc(size / 2, size / 2 - r * 0.15, r * 0.55, Math.PI * 0.85, Math.PI * 0.15, true);
+      ctx.lineTo(size / 2, size / 2 - r * 0.4);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.fillStyle = colors.accent;
+      ctx.beginPath();
+      ctx.arc(size * 0.68, size * 0.32, r * 0.12, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = colors.text;
+      ctx.font = `bold ${size * 0.18}px system-ui, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      ctx.fillText('JIA', size / 2, size * 0.92);
+    }
+
+    const container = document.getElementById('icons');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    sizes.forEach(size => {
+      canvas.width = size;
+      canvas.height = size;
+      drawIcon(ctx, size);
+
+      const dataUrl = canvas.toDataURL('image/png');
+
+      const div = document.createElement('div');
+      div.className = 'icon-preview';
+      div.innerHTML = `
+        <img src="${dataUrl}" width="${Math.min(size, 150)}" height="${Math.min(size, 150)}" alt="Icon ${size}x${size}">
+        <p>${size}x${size}</p>
+      `;
+
+      const btn = document.createElement('button');
+      btn.textContent = `Download ${size}px`;
+      btn.onclick = () => {
+        const link = document.createElement('a');
+        link.download = `pwa-${size}.png`;
+        link.href = dataUrl;
+        link.click();
+      };
+      div.appendChild(btn);
+
+      container.appendChild(div);
+    });
+  </script>
+</body>
+</html>

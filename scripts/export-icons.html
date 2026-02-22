@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Export PWA Icons - Jia</title>
+  <style>
+    body { font-family: system-ui; max-width: 650px; margin: 2rem auto; padding: 1rem; background: #1a1a2e; color: #fff; }
+    h1 { color: #ffd76a; }
+    .icons { display: flex; gap: 1.5rem; flex-wrap: wrap; margin: 1.5rem 0; }
+    .icon-card { background: #17234a; padding: 1rem; border-radius: 12px; text-align: center; }
+    .icon-card img { border-radius: 16px; margin: 0.5rem 0; }
+    button { background: linear-gradient(180deg, #4462cf, #354ea8); color: #fff; border: 1px solid #5f78d3; padding: 0.6rem 1rem; border-radius: 8px; font-size: 0.95rem; cursor: pointer; margin-top: 0.5rem; }
+    button:hover { filter: brightness(1.1); }
+    .note { background: #0b122f; padding: 1rem; border-radius: 8px; margin-top: 1rem; font-size: 0.9rem; color: #b6c0e4; }
+    code { background: #17234a; padding: 0.15rem 0.4rem; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>Export PWA Icons</h1>
+  <p>Click to download icons for <code>public/icons/</code></p>
+  
+  <div class="icons" id="icons"></div>
+  
+  <div class="note">
+    <strong>Setup:</strong> Download both icons → Place in <code>public/icons/</code> → Delete README.txt → PWA ready!
+  </div>
+
+  <script>
+    const sizes = [192, 512];
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+      <defs><radialGradient id="bg" cx="30%" cy="20%" r="80%"><stop offset="0%" stop-color="#2a3d7a"/><stop offset="100%" stop-color="#1a1a2e"/></radialGradient></defs>
+      <rect width="512" height="512" rx="64" fill="url(#bg)"/>
+      <circle cx="256" cy="256" r="140" fill="none" stroke="#7ea3ff" stroke-width="14"/>
+      <circle cx="256" cy="256" r="75" fill="#ffd76a"/>
+      <circle cx="340" cy="172" r="22" fill="#7ea3ff"/>
+      <text x="256" y="460" text-anchor="middle" font-family="system-ui, sans-serif" font-weight="700" font-size="72" fill="#f7f9ff">JIA</text>
+    </svg>`;
+
+    const container = document.getElementById('icons');
+    const blob = new Blob([svg], { type: 'image/svg+xml' });
+    const svgUrl = URL.createObjectURL(blob);
+
+    sizes.forEach(size => {
+      const card = document.createElement('div');
+      card.className = 'icon-card';
+
+      const img = new Image();
+      img.src = svgUrl;
+      img.width = Math.min(size, 180);
+      img.height = Math.min(size, 180);
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, size, size);
+        const pngUrl = canvas.toDataURL('image/png');
+
+        const preview = new Image();
+        preview.src = pngUrl;
+        preview.style.cssText = `width:${Math.min(size, 180)}px;height:${Math.min(size, 180)}px;border-radius:16px;`;
+        card.appendChild(preview);
+        card.appendChild(document.createElement('br'));
+
+        const label = document.createElement('span');
+        label.textContent = `${size} × ${size}`;
+        card.appendChild(label);
+        card.appendChild(document.createElement('br'));
+
+        const btn = document.createElement('button');
+        btn.textContent = 'Download PNG';
+        btn.onclick = () => {
+          const a = document.createElement('a');
+          a.href = pngUrl;
+          a.download = `pwa-${size}.png`;
+          a.click();
+        };
+        card.appendChild(btn);
+      };
+
+      container.appendChild(card);
+    });
+  </script>
+</body>
+</html>
