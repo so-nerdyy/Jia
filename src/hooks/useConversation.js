@@ -176,8 +176,8 @@ export function useConversation({ captureFrame }) {
         setIsSpeaking(false);
         speakingRef.current = false;
         setCurrentJiaText('');
-        // Resume listening - but don't wait, allow user to speak anytime
-        if (activeRef.current && !thinkingRef.current) {
+        // Resume listening only when not sending/thinking
+        if (activeRef.current && !thinkingRef.current && !sendingRef.current) {
           setTimeout(() => startListeningRef.current?.(), 100);
         }
       }
@@ -505,7 +505,10 @@ export function useConversation({ captureFrame }) {
     setRingScale(1);
 
     startProactiveMonitor();
-    setTimeout(() => startListeningRef.current?.(), 300);
+    // Only start listening if not sending/thinking
+    if (!sendingRef.current && !thinkingRef.current) {
+      setTimeout(() => startListeningRef.current?.(), 300);
+    }
   }, [startProactiveMonitor]);
 
   const stopConversation = useCallback(() => {
@@ -536,6 +539,13 @@ export function useConversation({ captureFrame }) {
       setTimeout(() => startListeningRef.current?.(), 300);
     }
   }, [isThinking, isSending, isActive, isSpeaking, isListening]);
+
+  // Block listening while sending or thinking to prevent accidental mic pickup
+  useEffect(() => {
+    if ((isSending || isThinking) && isListening) {
+      killRecognition();
+    }
+  }, [isSending, isThinking, isListening, killRecognition]);
 
   // ── Cleanup ────────────────────────────────────────────────────────────
   useEffect(() => {
